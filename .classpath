@@ -52,5 +52,11 @@
 			<attribute name="maven.scope" value="compile"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/Bruce/.p2/pool/plugins/org.eclipse.core.databinding_1.10.0.v20200815-1752.jar" sourcepath="C:/Users/Bruce/.p2/pool/plugins/org.eclipse.core.databinding_1.10.0.v20200815-1752.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Bruce/.p2/pool/plugins/org.eclipse.core.databinding.beans_1.7.0.v20200717-1533.jar" sourcepath="C:/Users/Bruce/.p2/pool/plugins/org.eclipse.core.databinding.beans_1.7.0.v20200717-1533.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Bruce/.p2/pool/plugins/org.eclipse.core.databinding.observable_1.10.0.v20200730-0848.jar" sourcepath="C:/Users/Bruce/.p2/pool/plugins/org.eclipse.core.databinding.observable_1.10.0.v20200730-0848.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Bruce/.p2/pool/plugins/org.eclipse.core.databinding.property_1.8.100.v20200619-0651.jar" sourcepath="C:/Users/Bruce/.p2/pool/plugins/org.eclipse.core.databinding.property_1.8.100.v20200619-0651.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Bruce/.p2/pool/plugins/org.eclipse.jface.databinding_1.12.0.v20200717-1533.jar" sourcepath="C:/Users/Bruce/.p2/pool/plugins/org.eclipse.jface.databinding_1.12.0.v20200717-1533.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Bruce/.p2/pool/plugins/org.eclipse.swtchart_0.12.0.202003130409.jar" sourcepath="C:/Users/Bruce/.p2/pool/plugins/org.eclipse.swtchart.source_0.12.0.202003130409.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

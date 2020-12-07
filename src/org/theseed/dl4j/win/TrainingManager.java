@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.theseed.dl4j.train.CrossValidateProcessor;
 import org.theseed.dl4j.train.ITrainReporter;
+import org.theseed.dl4j.train.RegressionTrainingProcessor;
 import org.theseed.dl4j.train.SearchProcessor;
 import org.theseed.dl4j.train.TrainingProcessor;
 import org.theseed.io.LineReader;
@@ -99,6 +100,8 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
     private double upper;
     /** button to edit parameter file */
     private Button btnEditParms;
+    /** button to display scatter graph */
+    private Button btnGraph;
 
     /**
      * Initialize the training manager.
@@ -111,8 +114,6 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
         modelDir = null;
         modelType = TrainingProcessor.Type.CLASS;
         backgrounder = null;
-        this.lower = 0.0;
-        this.upper = 1.0;
     }
 
     /**
@@ -270,7 +271,7 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
             }
         });
         btnAbort.setEnabled(false);
-        btnAbort.setBounds(299, 67, 168, 25);
+        btnAbort.setBounds(355, 67, 150, 25);
         btnAbort.setText("Abort Command");
 
         btnEditParms = new Button(fixedRegion, SWT.NONE);
@@ -294,6 +295,28 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
         });
         btnViewLog.setBounds(89, 67, 75, 25);
         btnViewLog.setText("View Log");
+
+        btnGraph = new Button(fixedRegion, SWT.NONE);
+        btnGraph.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent evt) {
+                if (modelType == TrainingProcessor.Type.REGRESSION) {
+                    try {
+                        RegressionTrainingProcessor processor = new RegressionTrainingProcessor();
+                        processor.initializeForPredictions(modelDir);
+                        ScatterDisplay scatterDialog = new ScatterDisplay(shlTrainingManager, SWT.DEFAULT,
+                                txtModelDirectory.getText(), processor);
+                        scatterDialog.open();
+                    } catch (IOException e) {
+                        showError("Parameter File Error", e.getMessage());
+                    }
+                } else {
+                    showError("Scatter Display", "Function not supported for classification models.");
+                }
+            }
+        });
+        btnGraph.setBounds(170, 67, 75, 25);
+        btnGraph.setText("Scatter Plot");
 
         barScore = new ProgressBar(shlTrainingManager, SWT.VERTICAL);
         barScore.setMaximum(100);
@@ -394,6 +417,9 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
             enableButtons(false);
             // Tell the user what we're up to.
             txtStatus.setText("Running " + name + " command.");
+            // Reset the progress bar.
+            this.lower = 0.0;
+            this.upper = 1.0;
             // Start the thread.
             backgrounder = new Background(this, processor);
             backgrounder.start();
@@ -508,6 +534,8 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
                         availableHeaders, modelType);
                 String[] metaCols = metaColFinder.open();
                 processor.setMetaCols(metaCols);
+                if (metaCols.length > 0)
+                    processor.setIdCol(metaCols[0]);
                 processor.writeParms(parmFile);
             }
             // If we made it here without any errors, we can enable the buttons.
@@ -526,6 +554,7 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
         btnClassifier.setEnabled(enabled);
         btnRegression.setEnabled(enabled);
         btnEditParms.setEnabled(enabled);
+        btnGraph.setEnabled(enabled);
         btnAbort.setEnabled(! enabled);
     }
 

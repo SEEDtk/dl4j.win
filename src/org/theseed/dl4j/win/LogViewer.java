@@ -24,7 +24,6 @@ import org.theseed.win.ShellUtils;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 /**
@@ -45,13 +44,6 @@ public class LogViewer extends Dialog {
     /** TRUE if the window is created */
     private boolean created;
 
-    // ICONS
-    private static final Image EMPTY_JOB_ICO = SWTResourceManager.getImage(LogViewer.class, "/org/theseed/images/empty-job.ico");
-    private static final Image RESULT_ICO = SWTResourceManager.getImage(LogViewer.class, "/org/theseed/images/result.ico");
-    private static final Image SEARCH_JOB_ICO = SWTResourceManager.getImage(LogViewer.class, "/org/theseed/images/search-job.ico");
-    private static final Image XVALIDATE_JOB_ICO = SWTResourceManager.getImage(LogViewer.class, "/org/theseed/images/xvalidate-job.ico");
-    private static final Image SUMMARY_ICO = SWTResourceManager.getImage(LogViewer.class, "/org/theseed/images/summary.ico");
-
     /**
      * Create the dialog.
      *
@@ -70,17 +62,15 @@ public class LogViewer extends Dialog {
      */
     public void open() {
         createContents();
-        shell.open();
-        shell.layout();
         if (created) {
+            shell.open();
+            shell.layout();
             Display display = getParent().getDisplay();
             while (!shell.isDisposed()) {
                 if (!display.readAndDispatch()) {
                     display.sleep();
                 }
             }
-        } else {
-            shell.close();
         }
     }
 
@@ -160,13 +150,7 @@ public class LogViewer extends Dialog {
         String line = lineIter.next();
         TreeItem jobItem = new TreeItem(treeDirectory, SWT.DEFAULT);
         jobItem.setText(line);
-        if (line.startsWith("Search "))
-            jobItem.setImage(SEARCH_JOB_ICO);
-        else if (line.startsWith("Cross-Validate "))
-            jobItem.setImage(XVALIDATE_JOB_ICO);
-        else
-            jobItem.setImage(EMPTY_JOB_ICO);
-        // We will accumulate sections in here.
+       // We will accumulate sections in here.
         List<String> currentText = new ArrayList<String>(SECTION_SIZE);
         TreeItem sectionItem = null;
         boolean endOfJob = false;
@@ -193,10 +177,6 @@ public class LogViewer extends Dialog {
                     sectionItem = new TreeItem(jobItem, SWT.DEFAULT);
                     line = lineIter.next();
                     sectionItem.setText(line);
-                    if (line.startsWith("Summary "))
-                        sectionItem.setImage(SUMMARY_ICO);
-                    else
-                        sectionItem.setImage(RESULT_ICO);
                     currentText.clear();
                     currentText.add(line);
                 }

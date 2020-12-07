@@ -122,6 +122,7 @@ public class ParmsDialog extends Dialog {
 
         ParmDialogText.load(grpStructure, parms, "meta");
         ParmDialogText.load(grpStructure, parms, "col");
+        ParmDialogText.load(grpStructure, parms, "id");
         ParmDialogChoices.load(grpStructure, parms, "init", Activation.values());
         ParmDialogChoices.load(grpStructure, parms, "activation", Activation.values());
         ParmDialogFlag.load(grpStructure, parms, "raw");

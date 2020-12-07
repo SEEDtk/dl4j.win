@@ -53,10 +53,10 @@ public class ShellUtils {
         } else {
             int x = prefs.getInt("_x", 300);
             int y = prefs.getInt("_y", 300);
-            shell.setBounds(x, y, w, height);
+            shell.setBounds(x, y, w, h);
             shell.setMaximized(prefs.getBoolean("_max", false));
         }
-        // Add a close listener to save the position.
+        // Add a resize listener to save the position.
         shell.addListener(SWT.Close, new CloseListener(shell, controller));
 
     }
@@ -93,13 +93,16 @@ public class ShellUtils {
 
         @Override
         public void handleEvent(Event arg0) {
+            boolean maxed = shell.getMaximized();
             Preferences prefs = getPrefs(controller);
-            Rectangle bounds = shell.getBounds();
-            prefs.putInt("_x", bounds.x);
-            prefs.putInt("_y", bounds.y);
-            prefs.putInt("_w", bounds.width);
-            prefs.putInt("_h", bounds.height);
-            prefs.putBoolean("_max", shell.getMaximized());
+            if (! maxed) {
+                Rectangle bounds = shell.getBounds();
+                prefs.putInt("_x", bounds.x);
+                prefs.putInt("_y", bounds.y);
+                prefs.putInt("_w", bounds.width);
+                prefs.putInt("_h", bounds.height);
+            }
+            prefs.putBoolean("_max", maxed);
         }
 
     }
