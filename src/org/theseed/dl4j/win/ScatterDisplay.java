@@ -15,7 +15,6 @@ import org.theseed.dl4j.train.RegressionTrainingProcessor;
 import org.theseed.reports.RegressionValidationScatter;
 import org.theseed.win.ShellUtils;
 
-import org.eclipse.swt.widgets.FileDialog;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -175,26 +174,12 @@ public class ScatterDisplay extends Dialog {
      * Select a new training file to run.
      */
     protected void selectTrainingFile() {
-        FileDialog fileChooser = new FileDialog(shell, SWT.OPEN);
-        fileChooser.setFilterPath(processor.getModelDir().toString());
-        fileChooser.setText("Choose a training file.");
-        String trainName = fileChooser.open();
-        File trainTestFile = null;
-        // Loop until the user quits or we find a valid input file.
-        boolean valid = false;
-        while (trainName != null && ! valid) {
-            trainTestFile = new File(trainName);
-            if (! trainTestFile.canRead())
-                ShellUtils.showErrorBox(shell, "Training File", "Selected file is unreadable.");
-            else
-                valid = true;
-            if (! valid)
-                trainName = fileChooser.open();
-        }
+        File dir = processor.getModelDir();
+        File trainTestFile = ShellUtils.selectFile(shell, dir);
         // Do we have a new training file?
-        if (trainName != null) {
+        if (trainTestFile != null) {
             this.trainFile = trainTestFile;
-            txtTrainingFile.setText(trainName);
+            txtTrainingFile.setText(trainTestFile.getName());
             runPredictions();
         }
     }
@@ -241,7 +226,7 @@ public class ScatterDisplay extends Dialog {
         testingSeries.setSymbolType(ILineSeries.PlotSymbolType.CIRCLE);
         testingSeries.setSymbolColor(new Color(255, 0, 0));
         testingSeries.setSymbolSize(3);
-        CartesianSeriesModel<String> testingModel = this.reporter.new Model(cmbLabel.getSelectionIndex(), true);
+        CartesianSeriesModel<String> testingModel = this.reporter.new Model(cmbLabel.getSelectionIndex(), false);
         testingSeries.setDataModel(testingModel);
         chartMain.getAxisSet().adjustRange();
         chartMain.redraw();

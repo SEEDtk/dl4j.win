@@ -3,21 +3,15 @@
  */
 package org.theseed.reports;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.swtchart.model.CartesianSeriesModel;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.theseed.dl4j.train.IPredictError;
-import org.theseed.io.LineReader;
 
 /**
  * This class is the reporter for the regression scatter display.  It creates a map of the results from the prediction
@@ -26,13 +20,15 @@ import org.theseed.io.LineReader;
  * @author Bruce Parrello
  *
  */
-public class RegressionValidationScatter implements IValidationReport {
+public class RegressionValidationScatter extends ValidationDisplayReport implements IValidationReport {
 
     // FIELDS
-    /** IDs of records that were used in training */
-    private Set<String> trained;
     /** map of ID strings to predictions */
     private Map<String, Prediction> predictionMap;
+
+    public RegressionValidationScatter() {
+        super();
+    }
 
     /**
      * This class represents the expected and output values for a single record.
@@ -71,13 +67,6 @@ public class RegressionValidationScatter implements IValidationReport {
 
     }
 
-    /**
-     * Construct a blank scatter object.
-     */
-    public RegressionValidationScatter() {
-        this.trained = Collections.emptySet();
-    }
-
     @Override
     public void startReport(List<String> metaCols, List<String> labels) {
         // Create the prediction map.
@@ -88,25 +77,13 @@ public class RegressionValidationScatter implements IValidationReport {
     public void reportOutput(List<String> metaData, INDArray expected, INDArray output) {
         // Loop through the metadata, peeling off predictions.
         for (int r = 0; r < metaData.size(); r++) {
-            String id = StringUtils.substringBefore(metaData.get(r), "\t");
-            if (id == null || id.isEmpty())
-                id = String.format("item %d", this.predictionMap.size() + 1);
+            String id = getId(metaData.get(r));
             this.predictionMap.put(id, new Prediction(r, expected, output));
         }
     }
 
     @Override
     public void finishReport(IPredictError errors) {
-    }
-
-    @Override
-    public void close() {
-    }
-
-    @Override
-    public void setupIdCol(File modelDir, String idCol, List<String> metaList) throws IOException {
-        File trainedFile = new File(modelDir, "trained.tbl");
-        this.trained = LineReader.readSet(trainedFile);
     }
 
     /**
@@ -128,7 +105,7 @@ public class RegressionValidationScatter implements IValidationReport {
         public Model(int labelIdx, boolean training) {
             this.lblIdx = labelIdx;
             // Get the IDs of the appropriate type.
-            this.idList = predictionMap.keySet().stream().filter(x -> trained.contains(x) == training).collect(Collectors.toList());
+            this.idList = predictionMap.keySet().stream().filter(x -> isTrained(x) == training).collect(Collectors.toList());
         }
 
         @Override

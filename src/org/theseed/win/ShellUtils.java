@@ -3,11 +3,13 @@
  */
 package org.theseed.win;
 
+import java.io.File;
 import java.util.prefs.Preferences;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
@@ -56,7 +58,7 @@ public class ShellUtils {
             shell.setBounds(x, y, w, h);
             shell.setMaximized(prefs.getBoolean("_max", false));
         }
-        // Add a resize listener to save the position.
+        // Add a close listener to save the position.
         shell.addListener(SWT.Close, new CloseListener(shell, controller));
 
     }
@@ -71,6 +73,36 @@ public class ShellUtils {
         Preferences prefs = Preferences.userNodeForPackage(oClass);
         return prefs;
     }
+
+    /**
+     * Get an input file from a file dialog.
+     *
+     * @param dir	starting directory
+     *
+     * @return the new file, or NULL if none was selected
+     */
+    public static File selectFile(Shell shell, File dir) {
+        FileDialog fileChooser = new FileDialog(shell, SWT.OPEN);
+        fileChooser.setFilterPath(dir.toString());
+        fileChooser.setText("Choose a training file.");
+        String trainName = fileChooser.open();
+        File retVal = null;
+        // Loop until the user quits or we find a valid input file.
+        boolean valid = false;
+        while (trainName != null && ! valid) {
+            retVal = new File(trainName);
+            if (! retVal.canRead())
+                ShellUtils.showErrorBox(shell, "Training File", "Selected file is unreadable.");
+            else
+                valid = true;
+            if (! valid)
+                trainName = fileChooser.open();
+        }
+        if (trainName == null) retVal = null;
+        return retVal;
+    }
+
+
 
     /**
      * This class is the listener for saving a window position.
@@ -105,6 +137,25 @@ public class ShellUtils {
             prefs.putBoolean("_max", maxed);
         }
 
+    }
+
+
+
+    /**
+     * Persist the location of a fixed-size window.
+     *
+     * @param shell			window of interest
+     * @param controller	object controlling the window
+     * @param width			default width
+     * @param height		default height
+     */
+    public static void persistLocation(Shell shell, Object controller, int width, int height) {
+        Preferences prefs = getPrefs(controller);
+        int x = prefs.getInt("_x", 300);
+        int y = prefs.getInt("_y", 300);
+        shell.setBounds(x, y, width, height);
+        // Add a close listener to save the position.
+        shell.addListener(SWT.Close, new CloseListener(shell, controller));
     }
 
 }

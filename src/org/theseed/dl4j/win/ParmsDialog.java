@@ -76,6 +76,7 @@ public class ParmsDialog extends Dialog {
         String modelName = parmF.getParentFile().getName();
         parmFile = parmF;
         setText("Parameter Configuration for Model " + modelName);
+        this.modelType = modelType;
         try {
             parms = new ParmFile(parmF);
         } catch (IOException e) {

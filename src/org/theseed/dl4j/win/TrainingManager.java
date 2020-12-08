@@ -7,6 +7,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.theseed.dl4j.train.ClassTrainingProcessor;
 import org.theseed.dl4j.train.CrossValidateProcessor;
 import org.theseed.dl4j.train.ITrainReporter;
 import org.theseed.dl4j.train.RegressionTrainingProcessor;
@@ -27,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.eclipse.swt.SWT;
@@ -94,14 +96,16 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
     private Text txtScore;
     /** button to abort the run */
     private Button btnAbort;
-    /** lower limit for progress bar */
-    private double lower;
-    /** upper limit for progress bar */
-    private double upper;
     /** button to edit parameter file */
     private Button btnEditParms;
-    /** button to display scatter graph */
+    /** button to display scatter graph or confusion matrix */
     private Button btnGraph;
+    /** upper limit for progress bar */
+    private static final double LOG10_UPPER = 1;
+    /** lower limit for progress bar */
+    private static final double LOG10_LOWER = -10;
+    /** minimum displayable score */
+    private static final double MIN_SCORE = Math.pow(10.0, LOG10_LOWER);
 
     /**
      * Initialize the training manager.
@@ -183,6 +187,7 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 modelType = TrainingProcessor.Type.CLASS;
+                configureType();
             }
         });
         btnClassifier.setText("Classifier");
@@ -195,6 +200,7 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 modelType = TrainingProcessor.Type.REGRESSION;
+                configureType();
             }
         });
 
@@ -282,7 +288,7 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
                 parmEditor.open();
             }
         });
-        btnEditParms.setBounds(10, 67, 75, 25);
+        btnEditParms.setBounds(10, 67, 100, 25);
         btnEditParms.setText("Edit Parms");
 
         Button btnViewLog = new Button(fixedRegion, SWT.NONE);
@@ -293,7 +299,7 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
                 logViewer.open();
             }
         });
-        btnViewLog.setBounds(89, 67, 75, 25);
+        btnViewLog.setBounds(116, 67, 100, 25);
         btnViewLog.setText("View Log");
 
         btnGraph = new Button(fixedRegion, SWT.NONE);
@@ -311,12 +317,21 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
                         showError("Parameter File Error", e.getMessage());
                     }
                 } else {
-                    showError("Scatter Display", "Function not supported for classification models.");
+                    try {
+                        ClassTrainingProcessor processor = new ClassTrainingProcessor();
+                        processor.initializeForPredictions(modelDir);
+                        ConfusionDisplay confusionDialog = new ConfusionDisplay(shlTrainingManager, SWT.DEFAULT,
+                                processor);
+                        confusionDialog.open();
+                    } catch (IOException e) {
+                        showError("Parameter File Error", e.getMessage());
+                    }
                 }
+
             }
         });
-        btnGraph.setBounds(170, 67, 75, 25);
-        btnGraph.setText("Scatter Plot");
+        btnGraph.setBounds(222, 67, 100, 25);
+        btnGraph.setText("Confusion Matrix");
 
         barScore = new ProgressBar(shlTrainingManager, SWT.VERTICAL);
         barScore.setMaximum(100);
@@ -354,6 +369,16 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
             analyzeModelDirectory(modelDirName);
         } catch (IOException e) { }
 
+    }
+
+    /**
+     * Configure the results display button.
+     */
+    protected void configureType() {
+        if (modelType == TrainingProcessor.Type.CLASS)
+            btnGraph.setText("Confusion Matrix");
+        else
+            btnGraph.setText("Scatter Plot");
     }
 
     /**
@@ -417,9 +442,6 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
             enableButtons(false);
             // Tell the user what we're up to.
             txtStatus.setText("Running " + name + " command.");
-            // Reset the progress bar.
-            this.lower = 0.0;
-            this.upper = 1.0;
             // Start the thread.
             backgrounder = new Background(this, processor);
             backgrounder.start();
@@ -507,6 +529,7 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
                 btnRegression.setSelection(false);
                 btnClassifier.setSelection(true);
             }
+            configureType();
             // Check for a parms.prm file.
             parmFile = new File(modelDir, "parms.prm");
             if (! parmFile.exists()) {
@@ -587,6 +610,7 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
     private class Report implements Runnable {
 
         private String report;
+        private Pattern LINE_END = Pattern.compile("\\r?\\n");
 
         public Report(String report) {
             this.report = report;
@@ -594,7 +618,8 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
 
         @Override
         public void run() {
-            txtResults.setText(this.report);
+            String[] lines = LINE_END.split(this.report);
+            txtResults.setText(StringUtils.join(lines, System.getProperty("line.separator")));
         }
 
     }
@@ -618,12 +643,13 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
         public void run() {
             String eString = Integer.toString(this.epoch);
             txtEpoch.setText(eString);
-            txtScore.setText(Double.toString(this.score));
+            txtScore.setText(String.format("%10.6g", this.score));
             if (this.saved)
                 txtBestEpoch.setText(eString);
-            while (this.score > upper) upper += 1.0;
-            while (this.score < lower) lower -= 1.0;
-            int intScore = (int) ((this.score + lower) * 100 / (upper - lower));
+            int intScore = 0;
+            if (this.score > MIN_SCORE)
+                intScore = (int) (Math.log10(this.score - LOG10_LOWER) * 100 / (LOG10_UPPER - LOG10_LOWER));
+            if (intScore >  100) intScore = 100;
             barScore.setSelection(intScore);
         }
 
