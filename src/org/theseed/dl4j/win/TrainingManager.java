@@ -17,6 +17,10 @@ import org.theseed.io.LineReader;
 import org.theseed.utils.ICommand;
 import org.theseed.utils.Parms;
 import org.theseed.win.ShellUtils;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.wb.swt.SWTResourceManager;
 import org.eclipse.swt.widgets.Label;
@@ -127,6 +131,11 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
      */
     public static void main(String[] args) {
         try {
+            // Configure logging.
+            Level logLevel = Level.ERROR;
+            if (args.length >= 1 && args[0].contentEquals("-v")) logLevel = Level.INFO;
+            LoggerContext logging = (LoggerContext) LoggerFactory.getILoggerFactory();
+            logging.getLogger(Logger.ROOT_LOGGER_NAME).setLevel(logLevel);
             try (TrainingManager window = new TrainingManager()) {
                 window.open();
             }
@@ -309,20 +318,30 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
                 if (modelType == TrainingProcessor.Type.REGRESSION) {
                     try {
                         RegressionTrainingProcessor processor = new RegressionTrainingProcessor();
-                        processor.initializeForPredictions(modelDir);
-                        ScatterDisplay scatterDialog = new ScatterDisplay(shlTrainingManager, SWT.DEFAULT,
-                                txtModelDirectory.getText(), processor);
-                        scatterDialog.open();
+                        processor.setProgressMonitor(TrainingManager.this);
+                        boolean ok = processor.initializeForPredictions(modelDir);
+                        if (ok) {
+                            ScatterDisplay scatterDialog = new ScatterDisplay(shlTrainingManager, SWT.DEFAULT,
+                                    txtModelDirectory.getText(), processor);
+                            scatterDialog.open();
+                        } else {
+                            showError("Invalid Parameter File", "Parameter file not set up for evaluation.");
+                        }
                     } catch (IOException e) {
                         showError("Parameter File Error", e.getMessage());
                     }
                 } else {
                     try {
                         ClassTrainingProcessor processor = new ClassTrainingProcessor();
-                        processor.initializeForPredictions(modelDir);
-                        ConfusionDisplay confusionDialog = new ConfusionDisplay(shlTrainingManager, SWT.DEFAULT,
-                                processor);
-                        confusionDialog.open();
+                        processor.setProgressMonitor(TrainingManager.this);
+                        boolean ok = processor.initializeForPredictions(modelDir);
+                        if (ok) {
+                            ConfusionDisplay confusionDialog = new ConfusionDisplay(shlTrainingManager, SWT.DEFAULT,
+                                    processor);
+                            confusionDialog.open();
+                        } else {
+                            showError("Invalid Parameter File", "Parameter file not set up for evaluation.");
+                        }
                     } catch (IOException e) {
                         showError("Parameter File Error", e.getMessage());
                     }
@@ -648,7 +667,7 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
                 txtBestEpoch.setText(eString);
             int intScore = 0;
             if (this.score > MIN_SCORE)
-                intScore = (int) (Math.log10(this.score - LOG10_LOWER) * 100 / (LOG10_UPPER - LOG10_LOWER));
+                intScore = (int) ((Math.log10(this.score) - LOG10_LOWER) * 100 / (LOG10_UPPER - LOG10_LOWER));
             if (intScore >  100) intScore = 100;
             barScore.setSelection(intScore);
         }

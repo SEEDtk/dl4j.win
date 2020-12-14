@@ -18,6 +18,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.widgets.Widget;
 import org.theseed.dl4j.train.RunStats;
 import org.theseed.io.LineReader;
 import org.theseed.win.ShellUtils;
@@ -41,6 +42,8 @@ public class LogViewer extends Dialog {
     private File trialFile;
     /** default number of lines to allocate for each section */
     private static final int SECTION_SIZE = 80;
+    /** last summary section */
+    private TreeItem lastSummary;
     /** TRUE if the window is created */
     private boolean created;
 
@@ -92,9 +95,7 @@ public class LogViewer extends Dialog {
         treeDirectory.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                String section = (String) e.item.getData();
-                if (section != null)
-                    textSection.setText(section);
+                showSection(e.item);
             }
         });
 
@@ -116,6 +117,7 @@ public class LogViewer extends Dialog {
      */
     private boolean loadTrialLog(Tree treeDirectory) {
         boolean retVal = false;
+        lastSummary = null;
         try (LineReader reader = new LineReader(this.trialFile)) {
             // Read the first line.
             Iterator<String> lineIter = reader.iterator();
@@ -128,8 +130,13 @@ public class LogViewer extends Dialog {
                 // If it had sections, denote the tree is valid.
                 if (ok) retVal = true;
             }
+            // If we found nothing, it's an error.  If we found a summary, pre-select it.
             if (! retVal)
                 ShellUtils.showErrorBox(shell, "Error Loading Trial Log", "Trial log had no valid jobs in it.");
+            else if (lastSummary != null) {
+                treeDirectory.setSelection(lastSummary);
+                showSection(lastSummary);
+            }
         } catch (IOException e) {
             ShellUtils.showErrorBox(shell, "Error Loading Trial Log", e.getMessage());
         }
@@ -177,6 +184,8 @@ public class LogViewer extends Dialog {
                     sectionItem = new TreeItem(jobItem, SWT.DEFAULT);
                     line = lineIter.next();
                     sectionItem.setText(line);
+                    if (StringUtils.startsWith(line, "Summary "))
+                        lastSummary = sectionItem;
                     currentText.clear();
                     currentText.add(line);
                 }
@@ -207,6 +216,17 @@ public class LogViewer extends Dialog {
         // Store the old section text in the old section node.
         String section = StringUtils.join(currentText, System.getProperty("line.separator"));
         sectionItem.setData(section);
+    }
+
+    /**
+     * Display the text (if any) associated with the selected item.
+     *
+     * @param item	tree item that was just selected
+     */
+    private void showSection(Widget item) {
+        String section = (String) item.getData();
+        if (section != null)
+            textSection.setText(section);
     }
 
 }
