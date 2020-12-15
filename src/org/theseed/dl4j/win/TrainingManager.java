@@ -172,55 +172,24 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
 
         shlTrainingManager = new Shell();
         shlTrainingManager.setImage(SWTResourceManager.getImage(TrainingManager.class, "/org/theseed/images/fig-gear.ico"));
-        ShellUtils.persistPosition(shlTrainingManager, this, 662, 452);
+        ShellUtils.persistPosition(shlTrainingManager, this, 700, 500);
         shlTrainingManager.setText("Training Manager");
         shlTrainingManager.setLayout(new GridLayout(2, false));
 
         Composite fixedRegion = new Composite(shlTrainingManager, SWT.NONE);
-        GridData gd_fixedRegion = new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1);
+        GridData gd_fixedRegion = new GridData(SWT.LEFT, SWT.CENTER, true, false, 2, 1);
         gd_fixedRegion.heightHint = 99;
         gd_fixedRegion.widthHint = 700;
         fixedRegion.setLayoutData(gd_fixedRegion);
+        fixedRegion.setLayout(new GridLayout(5, false));
 
         Label lblModelDirectory = new Label(fixedRegion, SWT.NONE);
-        lblModelDirectory.setLocation(10, 10);
-        lblModelDirectory.setSize(94, 15);
         lblModelDirectory.setText("Model Directory");
-
-        Group group = new Group(fixedRegion, SWT.NONE);
-        group.setLocation(310, 0);
-        group.setSize(200, 31);
-        group.setLayout(new FillLayout(SWT.HORIZONTAL));
-
-        btnClassifier = new Button(group, SWT.RADIO);
-        //btnClassifier.setLocation(100, 5);
-        //btnClassifier.setSize(78, 16);
-        btnClassifier.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                modelType = TrainingProcessor.Type.CLASS;
-                configureType();
-            }
-        });
-        btnClassifier.setText("Classifier");
-
-        btnRegression = new Button(group, SWT.RADIO);
-        //btnRegression.setLocation(5, 5);
-        //btnRegression.setSize(90, 16);
-        btnRegression.setText("Regression");
-        btnRegression.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                modelType = TrainingProcessor.Type.REGRESSION;
-                configureType();
-            }
-        });
-        group.pack();
         txtModelDirectory = new Text(fixedRegion, SWT.BORDER | SWT.READ_ONLY);
-        txtModelDirectory.setLocation(110, 7);
-        txtModelDirectory.setSize(158, 21);
+        GridData gd_txtModelDirectory = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gd_txtModelDirectory.widthHint = 150;
+        txtModelDirectory.setLayoutData(gd_txtModelDirectory);
         txtModelDirectory.setEditable(false);
-
         Button btnGetDirectory = new Button(fixedRegion, SWT.NONE);
         btnGetDirectory.setLocation(267, 7);
         btnGetDirectory.setSize(36, 21);
@@ -235,6 +204,29 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
         });
         btnGetDirectory.setText("...");
 
+        Group group = new Group(fixedRegion, SWT.NONE);
+        group.setLayout(new FillLayout(SWT.HORIZONTAL));
+
+        btnRegression = new Button(group, SWT.RADIO);
+        btnRegression.setText("Regression");
+        btnRegression.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                modelType = TrainingProcessor.Type.REGRESSION;
+                configureType();
+            }
+        });
+        btnClassifier = new Button(group, SWT.RADIO);
+        btnClassifier.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                modelType = TrainingProcessor.Type.CLASS;
+                configureType();
+            }
+        });
+        btnClassifier.setText("Classifier");
+        group.pack();
+
         btnRunSearch = new Button(fixedRegion, SWT.NONE);
         btnRunSearch.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -242,10 +234,35 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
                 runSearch();
             }
         });
-        btnRunSearch.setLocation(526, 5);
-        btnRunSearch.setSize(130, 25);
         btnRunSearch.setEnabled(false);
         btnRunSearch.setText("Training Search");
+
+        Composite group2 = new Composite(fixedRegion, SWT.NONE);
+        group2.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 4, 1));
+        group2.setLayout(new FillLayout(SWT.HORIZONTAL));
+
+        Composite groupEpoch = new Composite(group2, SWT.NONE);
+        groupEpoch.setLayout(new RowLayout(SWT.HORIZONTAL));
+        Label lblEpoch = new Label(groupEpoch, SWT.NONE);
+        lblEpoch.setText("Epoch");
+        txtEpoch = new Text(groupEpoch, SWT.BORDER | SWT.READ_ONLY);
+        groupEpoch.pack();
+
+        Composite groupScore = new Composite(group2, SWT.NONE);
+        groupScore.setLayout(new RowLayout(SWT.HORIZONTAL));
+        Label lblScore = new Label(groupScore, SWT.NONE);
+        lblScore.setText("Score");
+        txtScore = new Text(groupScore, SWT.BORDER | SWT.READ_ONLY);
+        groupScore.pack();
+
+        Composite groupBest = new Composite(group2, SWT.NONE);
+        groupBest.setLayout(new RowLayout(SWT.HORIZONTAL));
+        Label lblBestEpoch = new Label(groupBest, SWT.NONE);
+        lblBestEpoch.setText("Best Epoch");
+        txtBestEpoch = new Text(groupBest, SWT.BORDER | SWT.READ_ONLY);
+        groupBest.pack();
+
+        group2.pack();
 
         btnXValidate = new Button(fixedRegion, SWT.NONE);
         btnXValidate.addSelectionListener(new SelectionAdapter() {
@@ -256,43 +273,11 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
         });
         btnXValidate.setText("Cross Validate");
         btnXValidate.setEnabled(false);
-        btnXValidate.setBounds(526, 36, 130, 25);
 
-        Label lblEpoch = new Label(fixedRegion, SWT.NONE);
-        lblEpoch.setBounds(43, 41, 40, 15);
-        lblEpoch.setText("Epoch");
-
-        Label lblBestEpoch = new Label(fixedRegion, SWT.NONE);
-        lblBestEpoch.setBounds(345, 41, 68, 15);
-        lblBestEpoch.setText("Best Epoch");
-
-        txtEpoch = new Text(fixedRegion, SWT.BORDER | SWT.READ_ONLY);
-        txtEpoch.setBounds(89, 38, 48, 21);
-
-        Label lblScore = new Label(fixedRegion, SWT.NONE);
-        lblScore.setBounds(176, 41, 40, 15);
-        lblScore.setText("Score");
-
-        txtBestEpoch = new Text(fixedRegion, SWT.BORDER | SWT.READ_ONLY);
-        txtBestEpoch.setBounds(419, 38, 48, 21);
-
-        txtScore = new Text(fixedRegion, SWT.BORDER | SWT.READ_ONLY);
-        txtScore.setBounds(222, 38, 76, 21);
-
-        btnAbort = new Button(fixedRegion, SWT.NONE);
-        btnAbort.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (backgrounder != null) {
-                    backgrounder.interrupt();
-                }
-            }
-        });
-        btnAbort.setEnabled(false);
-        btnAbort.setBounds(355, 67, 150, 25);
-        btnAbort.setText("Abort Command");
-
-        btnEditParms = new Button(fixedRegion, SWT.NONE);
+        Composite groupCommands = new Composite(fixedRegion, SWT.NONE);
+        groupCommands.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
+        groupCommands.setLayout(new FillLayout());
+        btnEditParms = new Button(groupCommands, SWT.NONE);
         btnEditParms.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -300,10 +285,8 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
                 parmEditor.open();
             }
         });
-        btnEditParms.setBounds(10, 67, 100, 25);
         btnEditParms.setText("Edit Parms");
-
-        Button btnViewLog = new Button(fixedRegion, SWT.NONE);
+        Button btnViewLog = new Button(groupCommands, SWT.NONE);
         btnViewLog.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -311,10 +294,8 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
                 logViewer.open();
             }
         });
-        btnViewLog.setBounds(116, 67, 100, 25);
         btnViewLog.setText("View Log");
-
-        btnGraph = new Button(fixedRegion, SWT.NONE);
+        btnGraph = new Button(groupCommands, SWT.NONE);
         btnGraph.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent evt) {
@@ -352,8 +333,26 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
 
             }
         });
-        btnGraph.setBounds(222, 67, 100, 25);
         btnGraph.setText("Confusion Matrix");
+        groupCommands.pack();
+
+        btnAbort = new Button(fixedRegion, SWT.NONE);
+        btnAbort.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (backgrounder != null) {
+                    backgrounder.interrupt();
+                }
+            }
+        });
+        btnAbort.setEnabled(false);
+        btnAbort.setText("Abort Command");
+
+        new Label(fixedRegion, SWT.NONE);
+
+        fixedRegion.pack();
+
+        // END OF FIXED REGION
 
         barScore = new ProgressBar(shlTrainingManager, SWT.VERTICAL);
         barScore.setMaximum(100);
