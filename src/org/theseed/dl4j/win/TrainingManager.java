@@ -178,7 +178,7 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
 
         Composite fixedRegion = new Composite(shlTrainingManager, SWT.NONE);
         GridData gd_fixedRegion = new GridData(SWT.LEFT, SWT.CENTER, true, false, 2, 1);
-        gd_fixedRegion.heightHint = 99;
+        gd_fixedRegion.heightHint = 110;
         gd_fixedRegion.widthHint = 700;
         fixedRegion.setLayoutData(gd_fixedRegion);
         fixedRegion.setLayout(new GridLayout(5, false));
