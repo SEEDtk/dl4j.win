@@ -45,6 +45,8 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 
 /**
@@ -177,7 +179,7 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
         Composite fixedRegion = new Composite(shlTrainingManager, SWT.NONE);
         GridData gd_fixedRegion = new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1);
         gd_fixedRegion.heightHint = 99;
-        gd_fixedRegion.widthHint = 638;
+        gd_fixedRegion.widthHint = 700;
         fixedRegion.setLayoutData(gd_fixedRegion);
 
         Label lblModelDirectory = new Label(fixedRegion, SWT.NONE);
@@ -186,12 +188,13 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
         lblModelDirectory.setText("Model Directory");
 
         Group group = new Group(fixedRegion, SWT.NONE);
-        group.setLocation(304, 0);
-        group.setSize(192, 31);
+        group.setLocation(310, 0);
+        group.setSize(200, 31);
+        group.setLayout(new FillLayout(SWT.HORIZONTAL));
 
         btnClassifier = new Button(group, SWT.RADIO);
-        btnClassifier.setLocation(100, 5);
-        btnClassifier.setSize(78, 16);
+        //btnClassifier.setLocation(100, 5);
+        //btnClassifier.setSize(78, 16);
         btnClassifier.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -202,8 +205,8 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
         btnClassifier.setText("Classifier");
 
         btnRegression = new Button(group, SWT.RADIO);
-        btnRegression.setLocation(5, 5);
-        btnRegression.setSize(90, 16);
+        //btnRegression.setLocation(5, 5);
+        //btnRegression.setSize(90, 16);
         btnRegression.setText("Regression");
         btnRegression.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -212,7 +215,7 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
                 configureType();
             }
         });
-
+        group.pack();
         txtModelDirectory = new Text(fixedRegion, SWT.BORDER | SWT.READ_ONLY);
         txtModelDirectory.setLocation(110, 7);
         txtModelDirectory.setSize(158, 21);
