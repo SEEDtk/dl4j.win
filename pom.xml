@@ -89,7 +89,7 @@
          <artifactId>dl4j.win</artifactId>
          <scope>system</scope>
          <version>1.0</version>
-         <systemPath>${basedir}\src\lib\org.eclipse.swtchart.jar</systemPath>
+         <systemPath>${basedir}/src/lib/org.eclipse.swtchart.jar</systemPath>
       </dependency>
 
         <!-- ND4J backend: every project needs one of these. The backend defines

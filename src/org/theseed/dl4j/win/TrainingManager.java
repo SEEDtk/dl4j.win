@@ -187,11 +187,11 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
 
         Group group = new Group(fixedRegion, SWT.NONE);
         group.setLocation(304, 0);
-        group.setSize(182, 29);
+        group.setSize(192, 31);
 
         btnClassifier = new Button(group, SWT.RADIO);
-        btnClassifier.setLocation(109, 10);
-        btnClassifier.setSize(73, 16);
+        btnClassifier.setLocation(100, 5);
+        btnClassifier.setSize(78, 16);
         btnClassifier.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -202,7 +202,7 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
         btnClassifier.setText("Classifier");
 
         btnRegression = new Button(group, SWT.RADIO);
-        btnRegression.setLocation(10, 10);
+        btnRegression.setLocation(5, 5);
         btnRegression.setSize(90, 16);
         btnRegression.setText("Regression");
         btnRegression.addSelectionListener(new SelectionAdapter() {
@@ -220,7 +220,7 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
 
         Button btnGetDirectory = new Button(fixedRegion, SWT.NONE);
         btnGetDirectory.setLocation(267, 7);
-        btnGetDirectory.setSize(26, 21);
+        btnGetDirectory.setSize(36, 21);
         btnGetDirectory.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -240,7 +240,7 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
             }
         });
         btnRunSearch.setLocation(526, 5);
-        btnRunSearch.setSize(102, 25);
+        btnRunSearch.setSize(130, 25);
         btnRunSearch.setEnabled(false);
         btnRunSearch.setText("Training Search");
 
@@ -253,7 +253,7 @@ public class TrainingManager implements AutoCloseable, ITrainReporter {
         });
         btnXValidate.setText("Cross Validate");
         btnXValidate.setEnabled(false);
-        btnXValidate.setBounds(526, 36, 102, 25);
+        btnXValidate.setBounds(526, 36, 130, 25);
 
         Label lblEpoch = new Label(fixedRegion, SWT.NONE);
         lblEpoch.setBounds(43, 41, 40, 15);
